@@ -37,6 +37,34 @@ class JSRecordSpec extends FunSpec with Matchers {
     }
   }
 
+  describe("get") {
+    it("should work for properly typed keys") {
+      val x = JSRecord(
+        "foo" ->> (123: js.UndefOr[Int]) ::
+          "bar" ->> (js.undefined: js.UndefOr[String]) ::
+          "baz" ->> 12.34 ::
+          HNil
+      )
+
+      val foo = x.get("foo")
+      typed[js.UndefOr[Int]](foo)
+      foo should equal (123)
+
+      val bar = x.get("bar")
+      typed[js.UndefOr[String]](bar)
+      assert(js.isUndefined(bar))
+
+      val baz = x.get("baz")
+      typed[Double](baz)
+      baz should equal (12.34)
+    }
+
+    it("should fail for missing keys") {
+      val x = JSRecord("foo" ->> 123 :: HNil)
+      illTyped("""x.get("bar")""")
+    }
+  }
+
   // Check that two values have identical JS representation
   def assertJsEq(a: js.Any, b: js.Any): Unit = (a, b) match {
     case (a0: js.Object, b0: js.Object) =>
