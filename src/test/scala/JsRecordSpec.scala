@@ -19,20 +19,20 @@ class JSRecordSpec extends FunSpec with Matchers {
     }
     it("should construct object of expected structure") {
       val x = JSRecord(
-        'foo ->> 123 ::
-          'bar ->> "hello" ::
+        "foo" ->> 123 ::
+          "bar" ->> "hello" ::
           HNil
       )
-      typed[JSRecord[Record.`'foo -> Int, 'bar -> String`.T]](x)
+      typed[JSRecord[Record.`"foo" -> Int, "bar" -> String`.T]](x)
       assertJsEq(x, js.Dynamic.literal(foo = 123, bar = "hello"))
     }
     it("shouldn't add undefined fields") {
       val x = JSRecord(
-        'foo ->> (123: js.UndefOr[Int]) ::
-          'bar ->> (js.undefined: js.UndefOr[String]) ::
+        "foo" ->> (123: js.UndefOr[Int]) ::
+          "bar" ->> (js.undefined: js.UndefOr[String]) ::
           HNil
       )
-      typed[JSRecord[Record.`'foo -> js.UndefOr[Int], 'bar -> js.UndefOr[String]`.T]](x)
+      typed[JSRecord[Record.`"foo" -> js.UndefOr[Int], "bar" -> js.UndefOr[String]`.T]](x)
       assertJsEq(x, js.Dynamic.literal(foo = 123))
     }
   }

@@ -47,7 +47,7 @@ package object jsrecord {
       implicit def validRecord[M <: HList, FS <: HList, KS <: HList](
         implicit
           fs: ops.record.Fields.Aux[M, FS],
-          t: ops.hlist.ToTraversable.Aux[FS, List, (Symbol, Any)],
+          t: ops.hlist.ToTraversable.Aux[FS, List, (String, Any)],
           ks: ops.record.Keys.Aux[M, KS],
           d: IsDistinctConstraint[KS]
       ): ValidRecord[M] = new ValidRecord[M] {
@@ -57,7 +57,7 @@ package object jsrecord {
             (k, v) <- m.fields.toList
             // Don't create fields with `undefined` as a value
             if (!js.isUndefined(v))
-          } res.updateDynamic(k.name)(v.asInstanceOf[js.Any])
+          } res.updateDynamic(k)(v.asInstanceOf[js.Any])
           res.asInstanceOf[JSRecord[M]]
         }
       }
@@ -70,9 +70,9 @@ package object jsrecord {
   implicit class JSRecordOps[M <: HList](self: JSRecord[M]) {
     def get(k: Witness)(implicit
       s: ops.record.Selector[M, k.T],
-      ev: k.T <:< Symbol
+      ev: k.T <:< String
     ): s.Out = {
-      self.asInstanceOf[js.Dynamic].selectDynamic(k.value.name).asInstanceOf[s.Out]
+      self.asInstanceOf[js.Dynamic].selectDynamic(k.value).asInstanceOf[s.Out]
     }
   }
 
