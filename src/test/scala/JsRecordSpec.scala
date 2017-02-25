@@ -38,7 +38,7 @@ class JSRecordSpec extends FunSpec with Matchers {
   }
 
   describe("get") {
-    it("should work for properly typed keys") {
+    it("should work for existing keys") {
       val x = JSRecord(
         "foo" ->> (123: js.UndefOr[Int]) ::
           "bar" ->> (js.undefined: js.UndefOr[String]) ::
@@ -62,6 +62,31 @@ class JSRecordSpec extends FunSpec with Matchers {
     it("should fail for missing keys") {
       val x = JSRecord("foo" ->> 123 :: HNil)
       illTyped("""x.get("bar")""")
+    }
+  }
+
+  describe("field access") {
+    it("should work for existing keys") {
+      val x = JSRecord(
+        "foo" ->> (123: js.UndefOr[Int]) ::
+          "bar" ->> (js.undefined: js.UndefOr[String]) ::
+          "baz" ->> 12.34 ::
+          HNil
+      )
+
+      typed[js.UndefOr[Int]](x.foo)
+      x.foo should equal (123)
+
+      typed[js.UndefOr[String]](x.bar)
+      assert(js.isUndefined(x.bar))
+
+      typed[Double](x.baz)
+      x.baz should equal (12.34)
+    }
+
+    it("should fail for missing keys") {
+      val x = JSRecord("foo" ->> 123 :: HNil)
+      illTyped("""x.bar""")
     }
   }
 

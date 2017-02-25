@@ -1,3 +1,5 @@
+import scala.language.dynamics
+
 import shapeless._
 import record._
 import labelled.FieldType
@@ -31,18 +33,19 @@ package object jsrecord {
     * - Field values can't be [[js.undefined]] - this this doesn't mix well with
     *   ES6 object literals
     */
-  @ScalaJSDefined
-  trait JSRecord[M] extends js.Object
+  @js.native
+  // Dynamic is not implemented directly, but rather provided by JSRecordOps!
+  sealed trait JSRecord[M <: HList] extends js.Object with scala.Dynamic
 
   object JSRecord {
 
-    sealed trait ValidRecord[M] {
+    sealed trait ValidRecord[M <: HList] {
       def apply(m: M): JSRecord[M]
     }
 
     object ValidRecord {
 
-      def apply[M](implicit vr: ValidRecord[M]) = vr
+      def apply[M <: HList](implicit vr: ValidRecord[M]) = vr
 
       implicit def validRecord[M <: HList, FS <: HList, KS <: HList](
         implicit
@@ -63,7 +66,7 @@ package object jsrecord {
       }
     }
 
-    def apply[M](m: M)(implicit vr: ValidRecord[M]): JSRecord[M] =
+    def apply[M <: HList](m: M)(implicit vr: ValidRecord[M]): JSRecord[M] =
       vr(m)
   }
 
@@ -74,18 +77,10 @@ package object jsrecord {
     ): s.Out = {
       self.asInstanceOf[js.Dynamic].selectDynamic(k.value).asInstanceOf[s.Out]
     }
+
+    def selectDynamic(k: Witness)(implicit
+      s: ops.record.Selector[M, k.T],
+      ev: k.T <:< String
+    ): s.Out = this.get(k)
   }
-
-  // val x = JSRecord(
-  //   'foo ->> 123 ::
-  //   'bar ->> "hello" ::
-  //   HNil
-  // )
-
-  // def say(x: Int) = x + " is an Int"
-  // def say(x: String) = x + " is a String"
-
-  // println(say(x.get(Witness('foo))))
-  // println(say(x.get(Witness('bar))))
-
 }
