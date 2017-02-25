@@ -26,6 +26,10 @@ package object jsrecord {
     * This representation should allow us to express some constraints on types
     * that aren't easily translated to `ScalaJSDefined` traits. For example,
     * react-redux's `connect`.
+    *
+    * Invariants:
+    * - Field values can't be [[js.undefined]] - this this doesn't mix well with
+    *   ES6 object literals
     */
   @ScalaJSDefined
   trait JSRecord[M] extends js.Object
@@ -51,6 +55,8 @@ package object jsrecord {
           var res = js.Dynamic.literal()
           for {
             (k, v) <- m.fields.toList
+            // Don't create fields with `undefined` as a value
+            if (!js.isUndefined(v))
           } res.updateDynamic(k.name)(v.asInstanceOf[js.Any])
           res.asInstanceOf[JSRecord[M]]
         }
