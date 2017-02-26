@@ -90,6 +90,18 @@ class JSRecordSpec extends FunSpec with Matchers {
     }
   }
 
+  describe("toRecord") {
+    it("should work for existing keys") {
+      val rec0 = "foo" ->> 123 ::
+        "bar" ->> "hello" ::
+        HNil
+      val x = JSRecord(rec0)
+      val rec = x.toRecord
+      typed[Record.`"foo" -> Int, "bar" -> String`.T](rec)
+      rec should equal(rec0)
+    }
+  }
+
   // Check that two values have identical JS representation
   def assertJsEq(a: js.Any, b: js.Any): Unit = (a, b) match {
     case (a0: js.Object, b0: js.Object) =>

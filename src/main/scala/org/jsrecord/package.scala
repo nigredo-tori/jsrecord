@@ -2,7 +2,7 @@ import scala.language.dynamics
 
 import shapeless._
 import record._
-import labelled.FieldType
+import labelled.{ FieldType, field }
 import syntax.singleton._
 
 import scala.scalajs.js
@@ -40,7 +40,8 @@ package object jsrecord {
   object JSRecord {
 
     sealed trait ValidRecord[M <: HList] {
-      def apply(m: M): JSRecord[M]
+      def toJS(m: M): JSRecord[M]
+      def fromJS(jm: JSRecord[M]): M
     }
 
     object ValidRecord {
@@ -49,12 +50,13 @@ package object jsrecord {
 
       implicit def validRecord[M <: HList, FS <: HList, KS <: HList](
         implicit
-          fs: ops.record.Fields.Aux[M, FS],
-          t: ops.hlist.ToTraversable.Aux[FS, List, (String, Any)],
-          ks: ops.record.Keys.Aux[M, KS],
-          d: IsDistinctConstraint[KS]
+          fields: ops.record.Fields.Aux[M, FS],
+          toTraversable: ops.hlist.ToTraversable.Aux[FS, List, (String, Any)],
+          unsafeFromDynamic: UnsafeFromDynamic[M],
+          keys: ops.record.Keys.Aux[M, KS],
+          distinct: IsDistinctConstraint[KS]
       ): ValidRecord[M] = new ValidRecord[M] {
-        def apply(m: M) = {
+        def toJS(m: M): JSRecord[M] = {
           var res = js.Dynamic.literal()
           for {
             (k, v) <- m.fields.toList
@@ -63,11 +65,15 @@ package object jsrecord {
           } res.updateDynamic(k)(v.asInstanceOf[js.Any])
           res.asInstanceOf[JSRecord[M]]
         }
+
+        def fromJS(jm: JSRecord[M]): M = {
+          unsafeFromDynamic(jm.asInstanceOf[js.Dynamic])
+        }
       }
     }
 
     def apply[M <: HList](m: M)(implicit vr: ValidRecord[M]): JSRecord[M] =
-      vr(m)
+      vr.toJS(m)
   }
 
   implicit class JSRecordOps[M <: HList](self: JSRecord[M]) {
@@ -82,5 +88,9 @@ package object jsrecord {
       s: ops.record.Selector[M, k.T],
       ev: k.T <:< String
     ): s.Out = this.get(k)
+
+    def toRecord(
+      implicit vr: JSRecord.ValidRecord[M]
+    ): M = vr.fromJS(self)
   }
 }
