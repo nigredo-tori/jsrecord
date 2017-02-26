@@ -102,6 +102,30 @@ class JSRecordSpec extends FunSpec with Matchers {
     }
   }
 
+  describe("copy") {
+    it("should work for existing keys") {
+      val x = JSRecord(
+        "foo" ->> 123 ::
+          "bar" ->> "456" ::
+          HNil
+      )
+      val y = x.copy(foo = 789)
+      typed[JSRecord[Record.`"foo" -> Int, "bar" -> String`.T]](y)
+      y.foo should equal(789)
+      y.bar should equal("456")
+    }
+
+    it("should fail for missing or ill-typed fields") {
+      val x = JSRecord(
+        "foo" ->> 123 ::
+          HNil
+      )
+
+      illTyped("""x.copy(bar = 123)""")
+      illTyped("""x.copy(foo = "abc")""")
+    }
+  }
+
   // Check that two values have identical JS representation
   def assertJsEq(a: js.Any, b: js.Any): Unit = (a, b) match {
     case (a0: js.Object, b0: js.Object) =>

@@ -3,6 +3,7 @@ import scala.language.dynamics
 import shapeless._
 import record._
 import labelled.{ FieldType, field }
+import tag.@@
 import syntax.singleton._
 
 import scala.scalajs.js
@@ -77,6 +78,17 @@ package object jsrecord {
   }
 
   implicit class JSRecordOps[M <: HList](self: JSRecord[M]) {
+
+    class CopyOp extends RecordArgs {
+      def applyRecord[R0 <: HList, R <: HList](r0: R0)(
+        implicit
+          mapper: ops.hlist.Mapper.Aux[stripArgs.type, R0, R],
+          merge: ops.record.Merger.Aux[M, R, M],
+          vr: JSRecord.ValidRecord[M]
+      ): JSRecord[M] =
+        vr.toJS(merge(self.toRecord, mapper(r0)))
+    }
+
     def get(k: Witness)(implicit
       s: ops.record.Selector[M, k.T],
       ev: k.T <:< String
@@ -92,5 +104,14 @@ package object jsrecord {
     def toRecord(
       implicit vr: JSRecord.ValidRecord[M]
     ): M = vr.fromJS(self)
+
+    def copy = new CopyOp()
+  }
+
+  // TODO: Move to an implementation package
+  object stripArgs extends Poly1 {
+    implicit def caseKV[K, V] = at[FieldType[Symbol @@ K, V]](
+      f => field[K](f: V)
+    )
   }
 }
