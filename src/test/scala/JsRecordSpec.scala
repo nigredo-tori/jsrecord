@@ -158,6 +158,24 @@ class JSRecordSpec extends FunSpec with Matchers {
         illTyped("""R(foo = 1, bar = "abc", baz = 2)""")
       }
     }
+    describe("unapply") {
+      it("should work correctly") {
+        val R = new JSRecord.Companion[
+          Record.`"foo" -> Int, "bar" -> Int, "baz" -> String`.T
+        ]
+
+        val r = R(foo = 12, baz = "hi", bar = 34)
+
+        r match {
+          case R(foo, bar, baz) =>
+            foo should equal (r.foo)
+            bar should equal (r.bar)
+            baz should equal (r.baz)
+          case _ =>
+            fail()
+        }
+      }
+    }
   }
 
   // Check that two values have identical JS representation

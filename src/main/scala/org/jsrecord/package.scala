@@ -89,5 +89,12 @@ object JSRecord {
         mapper: ops.hlist.Mapper.Aux[impl.stripArgs.type, R, M0],
       align: ops.hlist.Align[M0, M]
     ): T = JSRecord(align(mapper(args)))
+
+    def unapply[VS <: HList](r: JSRecord[M])(
+      implicit
+        values: ops.record.Values.Aux[M, VS],
+      toTuple: ops.hlist.Tupler[VS]
+    ): Some[toTuple.Out] =
+      Some(toTuple(values(ev.fromJS(r))))
   }
 }
