@@ -126,6 +126,40 @@ class JSRecordSpec extends FunSpec with Matchers {
     }
   }
 
+  describe("Companion") {
+    it("should have corresponding T") {
+      val c = new JSRecord.Companion[Record.`"foo" -> Int`.T]
+
+      typed[JSRecord[Record.`"foo" -> Int`.T]](null: c.T)
+    }
+    describe("apply") {
+      it("should work for correct named arguments") {
+        val R = new JSRecord.Companion[
+          Record.`"foo" -> Int, "bar" -> Int, "baz" -> String`.T
+        ]
+
+        val r = R(foo = 12, baz = "hi", bar = 34)
+
+        typed[R.T](r)
+        r.foo should equal (12)
+        r.bar should equal (34)
+        r.baz should equal ("hi")
+      }
+      it("should fail for incorrect argument list") {
+        val R = new JSRecord.Companion[
+          Record.`"foo" -> Int, "bar" -> String`.T
+        ]
+
+        // Base case should work
+        R(foo = 123, bar = "foo")
+
+        illTyped("""R(foo = 123)""")
+        illTyped("""R(foo = 1, bar = 2)""")
+        illTyped("""R(foo = 1, bar = "abc", baz = 2)""")
+      }
+    }
+  }
+
   // Check that two values have identical JS representation
   def assertJsEq(a: js.Any, b: js.Any): Unit = (a, b) match {
     case (a0: js.Object, b0: js.Object) =>

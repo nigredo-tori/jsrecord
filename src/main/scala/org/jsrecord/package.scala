@@ -77,4 +77,17 @@ object JSRecord {
 
   implicit def toJSRecordOps[M <: HList](self: JSRecord[M]): JSRecordOps[M] =
     new JSRecordOps(self)
+
+  class Companion[M <: HList](implicit val ev: ValidRecord[M]) extends RecordArgs {
+
+    type T = JSRecord[M]
+
+    // TODO: unlabeled syntax
+    // TODO: defaults
+    def applyRecord[KS <: HList, R <: HList, M0 <: HList](args: R)(
+      implicit
+        mapper: ops.hlist.Mapper.Aux[impl.stripArgs.type, R, M0],
+      align: ops.hlist.Align[M0, M]
+    ): T = JSRecord(align(mapper(args)))
+  }
 }
