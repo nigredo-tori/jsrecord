@@ -171,8 +171,6 @@ class JSRecordSpec extends FunSpec with Matchers {
             foo should equal (r.foo)
             bar should equal (r.bar)
             baz should equal (r.baz)
-          case _ =>
-            fail()
         }
       }
     }

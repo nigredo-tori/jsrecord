@@ -18,7 +18,7 @@ class JSRecordOps[M <: HList](self: JSRecord[M]) {
       merge: ops.record.Merger.Aux[M, R, M],
       vr: JSRecord.ValidRecord[M]
     ): JSRecord[M] =
-      vr.toJS(merge(self.toRecord, mapper(r0)))
+      JSRecord.toJS(merge(self.toRecord, mapper(r0)))
   }
 
   def get(k: Witness)(implicit
@@ -35,7 +35,7 @@ class JSRecordOps[M <: HList](self: JSRecord[M]) {
 
   def toRecord(
     implicit vr: JSRecord.ValidRecord[M]
-  ): M = vr.fromJS(self)
+  ): M = JSRecord.fromJS(self)
 
   def copy = new CopyOp()
 }
