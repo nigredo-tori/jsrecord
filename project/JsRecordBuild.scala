@@ -14,7 +14,6 @@ object Settings {
     _.enablePlugins(ScalaJSPlugin)
       .settings(
         organization := "org.github.nigredo",
-        scalaVersion := "2.11.8",
         resolvers ++= Seq(
           Resolver.sonatypeRepo("releases"),
           Resolver.sonatypeRepo("snapshots")
