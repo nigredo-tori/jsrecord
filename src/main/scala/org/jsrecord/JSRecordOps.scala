@@ -21,17 +21,28 @@ class JSRecordOps[M <: HList](self: JSRecord[M]) {
       JSRecord.toJS(merge(self.toRecord, mapper(r0)))
   }
 
-  def get(k: Witness)(implicit
-    s: ops.record.Selector[M, k.T],
-    ev: k.T <:< String
-  ): s.Out = {
-    self.asInstanceOf[js.Dynamic].selectDynamic(k.value).asInstanceOf[s.Out]
-  }
+  // Three ways to access a field:
+  // r("foo")
+  // r.get("foo")
+  // r.foo
 
-  def selectDynamic(k: Witness)(implicit
-    s: ops.record.Selector[M, k.T],
-    ev: k.T <:< String
-  ): s.Out = this.get(k)
+  def get[K](k: Witness.Aux[K])(implicit
+    s: ops.record.Selector[M, K],
+    ev: K <:< String
+  ): s.Out =
+    JSRecord.get(k)(self)
+
+  def apply[K](k: Witness.Aux[K])(implicit
+    s: ops.record.Selector[M, K],
+    ev: K <:< String
+  ): s.Out =
+    JSRecord.get(k)(self)
+
+  def selectDynamic[K](k: Witness.Aux[K])(implicit
+    s: ops.record.Selector[M, K],
+    ev: K <:< String
+  ): s.Out =
+    JSRecord.get(k)(self)
 
   def toRecord(
     implicit vr: JSRecord.ValidRecord[M]

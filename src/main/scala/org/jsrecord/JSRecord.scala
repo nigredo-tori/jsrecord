@@ -91,6 +91,13 @@ object JSRecord {
     }
   }
 
+  def get[K, M <: HList](k: Witness.Aux[K])(r: JSRecord[M])(implicit
+    s: ops.record.Selector[M, k.T],
+    ev: K <:< String
+  ): s.Out = {
+    r.asInstanceOf[js.Dynamic].selectDynamic(k.value).asInstanceOf[s.Out]
+  }
+
   def toJS[M <: HList](m: M)(implicit rec: ValidRecord[M]): JSRecord[M] = {
     var res = js.Dynamic.literal()
     for {
