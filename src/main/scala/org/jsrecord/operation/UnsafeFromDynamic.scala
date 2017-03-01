@@ -1,4 +1,4 @@
-package jsrecord
+package jsrecord.operation
 
 import scala.annotation.implicitNotFound
 import scala.scalajs.js
@@ -8,7 +8,7 @@ import labelled.{ field, FieldType }
 
 /**
   * A twin of [[shapeless.ops.maps.FromMap]] that provides a conversion from
-  * [[js.Dynamic]] to a record. The conversion is unsafe in that it doesn't check
+  * [[js.Dynamic]] to a record. The conversion is unsafe in that it checks
   * neither the source's type, nor field value types. Only use this for objects you
   * control!
   */

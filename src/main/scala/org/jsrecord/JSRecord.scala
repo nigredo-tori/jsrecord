@@ -3,6 +3,8 @@ package jsrecord
 import scala.language.dynamics
 import scala.language.implicitConversions
 
+import jsrecord.operation.{ UnsafeFromDynamic, StripArgs }
+
 import shapeless._
 import record._
 import labelled.{ FieldType, field }
@@ -118,7 +120,7 @@ object JSRecord {
     def applyRecord[R <: HList, M0 <: HList](args: R)(
       implicit
         rec: ValidRecord[M],
-      mapper: ops.hlist.Mapper.Aux[impl.stripArgs.type, R, M0],
+      mapper: ops.hlist.Mapper.Aux[StripArgs.type, R, M0],
       align: ops.hlist.Align[M0, M]
     ): T = toJS(align(mapper(args)))
 

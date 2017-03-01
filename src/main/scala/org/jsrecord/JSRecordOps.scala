@@ -7,14 +7,14 @@ import record._
 import labelled.{ FieldType, field }
 import syntax.singleton._
 
-import impl.{ stripArgs }
+import jsrecord.operation.{ StripArgs }
 
 class JSRecordOps[M <: HList](self: JSRecord[M]) {
 
   class CopyOp extends RecordArgs {
     def applyRecord[R0 <: HList, R <: HList](r0: R0)(
       implicit
-        mapper: ops.hlist.Mapper.Aux[stripArgs.type, R0, R],
+        mapper: ops.hlist.Mapper.Aux[StripArgs.type, R0, R],
       merge: ops.record.Merger.Aux[M, R, M],
       vr: JSRecord.ValidRecord[M]
     ): JSRecord[M] =
