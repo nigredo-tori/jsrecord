@@ -265,7 +265,7 @@ class JSRecordSpec extends FunSpec with Matchers {
 
         // Should provide Liskov instance
         implicitly[RB.T <~< RA.T]
-        illTyped("""`implicitly[RA.T <~< RB.T]`""")
+        illTyped("""implicitly[RA.T <~< RB.T]""")
       }
     }
   }
