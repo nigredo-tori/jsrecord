@@ -3,7 +3,7 @@ package jsrecord
 import scala.language.dynamics
 import scala.language.implicitConversions
 
-import jsrecord.operation.{ UnsafeFromDynamic, StripArgs }
+import jsrecord.operation.{ UnsafeFromDynamic, StripArgs, ReplaceAll }
 
 import shapeless._
 import record._
@@ -12,6 +12,9 @@ import syntax.singleton._
 
 import scala.scalajs.js
 import js.annotation.ScalaJSDefined
+
+import scalaz.Liskov
+import Liskov.<~<
 
 /**
   * A generic "plain configuration object" type.
@@ -91,7 +94,7 @@ object JSRecord {
     }
   }
 
-  def get[K, M <: HList](k: Witness.Aux[K])(r: JSRecord[M])(implicit
+  def get[K, M <: HList](k: Witness.Aux[K], r: JSRecord[M])(implicit
     s: ops.record.Selector[M, k.T],
     ev: K <:< String
   ): s.Out = {
@@ -138,4 +141,25 @@ object JSRecord {
     ): Some[VST] =
       Some(toTuple(rec.values(fromJS(r))))
   }
+
+  implicit def makeLiskov[
+    L <: HList, LKS <: HList, LVS <: HList,
+    R <: HList, RKS <: HList,
+    RSelectedValues <: HList,
+    RLeftoverKeys <: HList,
+    RLeftoverValues <: HList,
+    US <: HList
+  ](
+    implicit
+      lvr: ValidRecord.Aux[L, _, LKS, LVS],
+      rvr: ValidRecord.Aux[R, _, RKS, _],
+      select: ops.record.SelectAll.Aux[R, LKS, RSelectedValues],
+      removeKeys: ops.hlist.Diff.Aux[RKS, LKS, RLeftoverKeys],
+      selectLeftover: ops.record.SelectAll.Aux[R, RLeftoverKeys, RLeftoverValues],
+      undefineds: ReplaceAll.Aux[RLeftoverKeys, js.UndefOr[Nothing], US],
+      selectedLiskov: LVS <~< RSelectedValues,
+      //leftoverLiskov: US <~< RLeftoverValues,
+      // Avoid ambiguity
+      neq: L =:!= R
+  ): JSRecord[L] <~< JSRecord[R] = Liskov.force
 }

@@ -7,6 +7,9 @@ import record._
 import labelled.{ FieldType, field }
 import syntax.singleton._
 
+import scalaz.Liskov
+import Liskov.{ witness, `<~<` }
+
 import jsrecord.operation.{ StripArgs }
 
 class JSRecordOps[M <: HList](self: JSRecord[M]) {
@@ -30,23 +33,29 @@ class JSRecordOps[M <: HList](self: JSRecord[M]) {
     s: ops.record.Selector[M, K],
     ev: K <:< String
   ): s.Out =
-    JSRecord.get(k)(self)
+    JSRecord.get(k, self)
 
   def apply[K](k: Witness.Aux[K])(implicit
     s: ops.record.Selector[M, K],
     ev: K <:< String
   ): s.Out =
-    JSRecord.get(k)(self)
+    JSRecord.get(k, self)
 
   def selectDynamic[K](k: Witness.Aux[K])(implicit
     s: ops.record.Selector[M, K],
     ev: K <:< String
   ): s.Out =
-    JSRecord.get(k)(self)
+    JSRecord.get(k, self)
 
   def toRecord(
     implicit vr: JSRecord.ValidRecord[M]
   ): M = JSRecord.fromJS(self)
 
   def copy = new CopyOp()
+
+  // R is generally another JSRecord - but it's way easier to just make this
+  // a syntax for Liskov
+  def as[R](implicit ev: JSRecord[M] <~< R): R =
+    // Implicit conversion provided by Liskov
+    Liskov.witness(ev)(self)
 }
