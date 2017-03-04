@@ -158,7 +158,7 @@ object JSRecord {
       selectLeftover: ops.record.SelectAll.Aux[R, RLeftoverKeys, RLeftoverValues],
       undefineds: ReplaceAll.Aux[RLeftoverKeys, js.UndefOr[Nothing], US],
       selectedLiskov: LVS <~< RSelectedValues,
-      //leftoverLiskov: US <~< RLeftoverValues,
+      leftoverLiskov: US <~< RLeftoverValues,
       // Avoid ambiguity
       neq: L =:!= R
   ): JSRecord[L] <~< JSRecord[R] = Liskov.force

@@ -217,6 +217,14 @@ class JSRecordSpec extends FunSpec with Matchers {
         assertJsEq(r1, js.Dynamic.literal(foo = 123))
       }
 
+      it("shouldn't allow skipping values that don't include undefined") {
+        val R = new JSRecord.Companion[
+          Record.`"foo" -> Int, "bar" -> js.UndefOr[String]`.T
+        ]
+        val badR = JSRecord("bar" ->> ("abc": js.UndefOr[String]) :: HNil)
+        illTyped("""badR.as[R.T]""")
+      }
+
       it("should handle subtyping") {
 
         class A
